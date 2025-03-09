@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G+ Motion</title>
+    <style>
+        body {
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(90deg, #6a00f4, #ff00ff);
+            padding: 20px;
+            font-size: 2em;
+            text-shadow: 0px 0px 10px #ff00ff;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+            transition: width 0.3s ease;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .widget {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0px 0px 10px #6a00f4;
+        }
+
+        button {
+            background: #ff00ff;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0px 0px 5px #ff00ff;
+        }
+
+        button:hover {
+            background: #6a00f4;
+            box-shadow: 0px 0px 10px #ff00ff;
+        }
+
+        #temperature-slider {
+            width: 100%;
+        }
+
+        #foot-image {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        function updateTemperature() {
+            const slider = document.getElementById("temperature-slider");
+            const temperature = slider.value;
+            document.getElementById("temperature-value").textContent = temperature;
+        }
+
+        async function requestWeather() {
+            const location = prompt("Please enter your location:");
+            if (!location) return;
+            const apiKey = "54accd9e4a3a33fadab4b8114f4afd37";
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${apiKey}`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            const weatherCondition = data.weather[0].main;
+            const temperature = data.main.temp;
+            const humidity = data.main.humidity;
+            const weatherIcon = weatherCondition === 'Clear' ? '☀️' : weatherCondition === 'Rain' ? '🌧️' : '🌥️';
+            document.getElementById("weather-info").innerHTML = `
+                <p>${weatherCondition} ${weatherIcon}</p>
+                <p>Temperature: ${temperature}°C</p>
+                <p>Humidity: ${humidity}%</p>
+            `;
+        }
+
+        async function getPerformanceSuggestion() {
+            const response = await fetch('/performance_suggestions', { method: 'POST' });
+            const data = await response.json();
+            document.getElementById("suggestion-text").textContent = data.suggestion;
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="G+ Motion Logo" class="logo">
+        <h1>G+ Motion</h1>
+    </header>
+    <main class="container">
+        <section id="weather-widget" class="widget">
+            <h2>Weather Information</h2>
+            <div id="weather-info"></div>
+            <button onclick="requestWeather()">Get Weather Info</button>
+        </section>
+
+        <section id="step-tracker" class="widget">
+            <h2>Step & Distance Tracker</h2>
+            <p>Steps: <span id="steps">0</span></p>
+            <p>Distance: <span id="distance">0</span> km</p>
+            <p>Calories Burned: <span id="calories">0</span> kcal</p>
+        </section>
+
+        <section id="temperature-control" class="widget">
+            <h2>Foot Temperature Adjustment</h2>
+            <input type="range" id="temperature-slider" min="14" max="35" step="1" value="14" onchange="updateTemperature()">
+            <p>Temperature: <span id="temperature-value">14</span>°C</p>
+        </section>
+
+        <section id="foot-analysis" class="widget">
+            <h2>Foot Pressure Analysis</h2>
+            <img src="{{ url_for('static', filename='foot_pressure_image.png') }}" alt="Foot Pressure Image" id="foot-image">
+        </section>
+
+        <section id="performance-suggestions" class="widget">
+            <h2>Stability & Performance Suggestions</h2>
+            <button onclick="getPerformanceSuggestion()">Get Suggestion</button>
+            <p id="suggestion-text"></p>
+        </section>
+    </main>
+</body>
+</html>
